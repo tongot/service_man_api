@@ -105,11 +105,20 @@ class BusinessView(viewsets.ModelViewSet):
 
 
 class ProductView(viewsets.ModelViewSet):
-    queryset= Product.objects.all()
     serializer_class = ProductSerializer
     pagination_class = PageNumberPagination
     filter_backends = (SearchFilter, OrderingFilter)
-    search_fields = ['name','description','business__name','category__name']
+    search_fields = ['name','description','business__name','product_category__name']
+
+    def get_queryset(self):
+        categories= []
+        params = self.request.query_params.get('params')
+        print(params)
+        if params != None:
+            categories = params.split(',')
+            return Product.objects.filter(product_category_id__in=categories)
+        return Product.objects.all()
+        
 
 
 class ProductCoverView(viewsets.ModelViewSet): 
