@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
+from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -71,8 +72,16 @@ class GetUser(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     def get(self,request, format=None):
-        print(request.user.id)
-        user_details = UserDetail.objects.get(user_id=request.user.id)
+        try:
+            user_details = UserDetail.objects.get(user_id=request.user.id)
+        except ObjectDoesNotExist:
+            user =({
+                    'email':request.user.email,
+                    'name':request.user.name,
+                    'surname':request.user.surname,
+                    'id':request.user.id})
+            return Response(user)
+
         user =({
                     'email':request.user.email,
                     'name':request.user.name,

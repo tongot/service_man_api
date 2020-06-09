@@ -154,8 +154,6 @@ class Order(models.Model):
     approved = models.CharField(max_length=3, choices=APPROVAL_STATE,default=NO)
     viewed = models.BooleanField(default=False)
 
-    def __str__(self):
-        return self.date_of_order
 
 
 class TypeOfGoodsSold(models.Model):

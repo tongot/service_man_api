@@ -6,6 +6,9 @@ from rest_framework.response import Response
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated,IsAuthenticatedOrReadOnly
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.filters import SearchFilter, OrderingFilter
 
 from .models import ProductCategory,BusinessCategory, Location, Business, Product,ProductImages,Order,Message
 from .serializers import BusinessCategorySerializer,ProductImageSerializer,OwnProductSerializer,OrdersSerializer,MessageSerializer, ProductCategorySerializer, LocationSerializer, ProductSerializer, BusinessSerializer
@@ -22,19 +25,43 @@ class OwnBusinessView(APIView):
 
 
 class OwnBusinessOrderView(viewsets.ViewSet):
+    """Order processing for business owners"""
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
+    
+    def isOwnerOfOder(self,req):
+        business_id = req.query_params.get('businessId')
+        if business_id != None:
+            business = Business.objects.filter(owner_id=req.user.id, id=business_id).first()
+            if business!=None:
+                return True
+            return False
+        return False
 
     def get(self,request,format=None):
-        business_id = request.query_params.get('businessId')
-        if business_id != None:
-            business = Business.objects.filter(owner_id=request.user.id, id=business_id).first()
-            if business!=None:
-                queryset= Order.objects.filter(business_id=business_id)
-                serializer = OrdersSerializer(queryset,many=True, context={'request':request})
-                return Response(serializer.data)
-            return Response({'error':'Not authorized'},status.HTTP_400_BAD_REQUEST) 
-        return Response({'error':'orders not found'},status.HTTP_400_BAD_REQUEST)
+        """get order for a particular business"""
+        if self.isOwnerOfOder(request):
+            business_id = request.query_params.get('businessId')
+            queryset= Order.objects.filter(business_id=business_id)
+            serializer = OrdersSerializer(queryset,many=True, context={'request':request})
+            return Response(serializer.data)
+        return Response({'error':'Not authorized'},status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=False,methods=['get'])
+    def orderViewed(self,request,format=None):
+        print(request.query_params)
+        """mark orders as viewed"""
+        if self.isOwnerOfOder(request):
+            orderId = request.query_params.get('orderId')
+            if(orderId != None):
+                order = get_object_or_404(Order,pk = orderId)
+                if order.business.id == int(request.query_params.get('businessId')):
+                    order.viewed = True
+                    order.save()
+                    return Response({'updated':'message openned'},status.HTTP_202_ACCEPTED)
+                return Response({'error':'business order mismatch'},status.HTTP_400_BAD_REQUEST)
+            return Response({'error':'get order failed'},status.HTTP_400_BAD_REQUEST)
+        return Response({'error':'Not authorized'},status.HTTP_400_BAD_REQUEST)
         
 
     def create(self,request):
@@ -70,6 +97,8 @@ class ProductCategoryView(viewsets.ModelViewSet):
 class BusinessCategoryView(viewsets.ModelViewSet):
     queryset = BusinessCategory.objects.all()
     serializer_class = BusinessCategorySerializer
+
+
 class BusinessView(viewsets.ModelViewSet):
     queryset= Business.objects.all()
     serializer_class = BusinessSerializer
@@ -78,6 +107,9 @@ class BusinessView(viewsets.ModelViewSet):
 class ProductView(viewsets.ModelViewSet):
     queryset= Product.objects.all()
     serializer_class = ProductSerializer
+    pagination_class = PageNumberPagination
+    filter_backends = (SearchFilter, OrderingFilter)
+    search_fields = ['name','description','business__name','category__name']
 
 
 class ProductCoverView(viewsets.ModelViewSet): 
