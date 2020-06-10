@@ -3,12 +3,14 @@ from .models import BusinessCategory, ProductCategory, Location,Order, TypeOfGoo
 
 
 class ProductCategorySerializer(serializers.ModelSerializer):
+    selected = serializers.BooleanField(required=False,default=True,read_only=True)
     class Meta:
         model = ProductCategory
         fields = '__all__'
 
 
 class BusinessCategorySerializer(serializers.ModelSerializer):
+    selected = serializers.BooleanField(required=False,default=True,read_only=True)
     class Meta:
         model = BusinessCategory
         fields = '__all__'

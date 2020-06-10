@@ -49,7 +49,6 @@ class OwnBusinessOrderView(viewsets.ViewSet):
     
     @action(detail=False,methods=['get'])
     def orderViewed(self,request,format=None):
-        print(request.query_params)
         """mark orders as viewed"""
         if self.isOwnerOfOder(request):
             orderId = request.query_params.get('orderId')
@@ -102,7 +101,8 @@ class BusinessCategoryView(viewsets.ModelViewSet):
 class BusinessView(viewsets.ModelViewSet):
     queryset= Business.objects.all()
     serializer_class = BusinessSerializer
-
+    filter_backends = (SearchFilter, OrderingFilter)
+    search_fields = ['location__city']
 
 class ProductView(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
@@ -110,14 +110,57 @@ class ProductView(viewsets.ModelViewSet):
     filter_backends = (SearchFilter, OrderingFilter)
     search_fields = ['name','description','business__name','product_category__name']
 
+    def filterPrice(self,query,maxPrice,minPrice):
+        try:
+            if maxPrice!= None and minPrice!= None and minPrice!='' and maxPrice!='':
+                return query.filter(price__gte=minPrice,price__lte=maxPrice)
+            elif minPrice!= None and minPrice!='':
+                return query.filter(price__gte=minPrice)
+            elif maxPrice!= None  and maxPrice!='':
+                return query.filter(price__lte=maxPrice)
+            else:
+                return query
+        except:
+            return query
+
     def get_queryset(self):
+        
         categories= []
-        params = self.request.query_params.get('params')
-        print(params)
-        if params != None:
-            categories = params.split(',')
-            return Product.objects.filter(product_category_id__in=categories)
-        return Product.objects.all()
+        businesses=[]
+        returnQuery={}
+
+        paramsCategory = self.request.query_params.get('productCategory')
+        paramsBusiness = self.request.query_params.get('sellers')
+        maxPrice = self.request.query_params.get('maxPrice')
+        minPrice = self.request.query_params.get('minPrice')
+        businesses = []
+        categories = []
+
+        if paramsCategory!=None:
+            categories= paramsCategory.split(',')
+            if all(i.isdigit() for i in categories)==False:
+                categories = []
+
+        if paramsBusiness!=None:
+            businesses= paramsBusiness.split(',')
+            if all(i.isdigit() for i in businesses)==False:
+                businesses = []
+
+
+        if len(businesses)>0:
+            businessResult = Product.objects.filter(business_id__in=businesses)
+            returnQuery = businessResult
+            if len(categories)>0:
+                if returnQuery != None:
+                    categoryResults=returnQuery.filter(product_category__in=categories)
+                    returnQuery=categoryResults
+                    return self.filterPrice(returnQuery,maxPrice,minPrice)
+                return self.filterPrice(returnQuery,maxPrice,minPrice)
+            return self.filterPrice(returnQuery,maxPrice,minPrice)
+        elif len(categories)>0:
+            categoryResults = Product.objects.filter(product_category__in=categories)
+            return  self.filterPrice(categoryResults,maxPrice,minPrice)
+        return self.filterPrice(Product.objects.all(),maxPrice,minPrice)
         
 
 
