@@ -99,10 +99,21 @@ class BusinessCategoryView(viewsets.ModelViewSet):
 
 
 class BusinessView(viewsets.ModelViewSet):
-    queryset= Business.objects.all()
     serializer_class = BusinessSerializer
     filter_backends = (SearchFilter, OrderingFilter)
-    search_fields = ['location__city']
+    search_fields = ['location__city','name']
+
+    def get_queryset(self):
+        categoryParams = self.request.query_params.get('businessCategory')
+        category=[]
+
+        if categoryParams !=None:
+            category = categoryParams.split(',')
+            if(all(i.isdigit() for i in category))==False:
+                category=[]
+            if len(category)>0:
+                return Business.objects.filter(category__in=category)
+        return Business.objects.all()
 
 class ProductView(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
