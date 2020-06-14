@@ -1,5 +1,6 @@
+from datetime import datetime
 from rest_framework import serializers
-from .models import BusinessReviews,BusinessCommentReply, BusinessCategory, ProductCategory, Location,Order, TypeOfGoodsSold,OtherProductProperty,Message, Business, Product, ProductImages
+from .models import BusinessComment,BusinessReviews,BusinessCommentReply, BusinessCategory, ProductCategory, Location,Order, TypeOfGoodsSold,OtherProductProperty,Message, Business, Product, ProductImages
 
 
 class ProductCategorySerializer(serializers.ModelSerializer):
@@ -148,6 +149,24 @@ class BusinessReviewSerializer(serializers.ModelSerializer):
         model = BusinessReviews
         fields = '__all__'
 
+    def create(self,validated_data):
+        print(validated_data['business'].id)
+        rated_already = BusinessReviews.objects.filter(user_id=validated_data['user'].id,business_id=validated_data['business'].id).first()
+        print(rated_already)
+        if rated_already != None:
+            rated_already.comment = validated_data['comment']
+            rated_already.stars = validated_data['stars']
+            rated_already.date_posted= datetime.now()
+            rated_already.save()
+            return rated_already
+        rating = BusinessReviews.objects.create(**validated_data)
+        return rating
+
+class BusinessCommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BusinessComment
+        fields = '__all__'
+
 
 class BusinessCommentReplySerializer(serializers.ModelSerializer):
     class Meta:
@@ -156,7 +175,7 @@ class BusinessCommentReplySerializer(serializers.ModelSerializer):
 
     def create(self,validated_data):
         print(validated_data['business_comment'].id)
-        bussiness_original_comment = BusinessReviews.objects.get(pk = validated_data['business_comment'].id)
+        bussiness_original_comment = BusinessComment.objects.get(pk = validated_data['business_comment'].id)
         business = Business.objects.get(pk = bussiness_original_comment.business.id)
         print(business.owner)
         if business.owner.id == validated_data['user'].id:
@@ -169,3 +188,6 @@ class BusinessCommentReplySerializer(serializers.ModelSerializer):
             return reply
         reply = BusinessCommentReply.objects.create(**validated_data)
         return reply
+        
+
+

@@ -10,8 +10,8 @@ from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.filters import SearchFilter, OrderingFilter
 
-from .models import BusinessReviews,BusinessCommentReply, ProductCategory,BusinessCategory, Location, Business, Product,ProductImages,Order,Message
-from .serializers import BusinessReviewSerializer,BusinessCommentReplySerializer,BusinessCategorySerializer,ProductImageSerializer,OwnProductSerializer,OrdersSerializer,MessageSerializer, ProductCategorySerializer, LocationSerializer, ProductSerializer, BusinessSerializer
+from .models import BusinessReviews, BusinessComment, BusinessCommentReply, ProductCategory,BusinessCategory, Location, Business, Product,ProductImages,Order,Message
+from .serializers import BusinessCommentSerializer, BusinessReviewSerializer,BusinessCommentReplySerializer,BusinessCategorySerializer,ProductImageSerializer,OwnProductSerializer,OrdersSerializer,MessageSerializer, ProductCategorySerializer, LocationSerializer, ProductSerializer, BusinessSerializer
 from .permissions import IsTheirOrder, IsOwnerOrReadOnly
 
 class OwnBusinessView(APIView):
@@ -214,8 +214,16 @@ class BusinessRatingView(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
     serializer_class = BusinessReviewSerializer
 
+class BusinessCommentView(viewsets.ModelViewSet):
+    """Business comment """
 
-class BusinessRatingReplyView(viewsets.ModelViewSet):
+    queryset = BusinessComment.objects.all()
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
+    serializer_class = BusinessCommentSerializer
+
+
+class BusinessCommentReplyView(viewsets.ModelViewSet):
     """Business comment and ratings """
 
     queryset = BusinessCommentReply.objects.all()

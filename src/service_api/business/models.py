@@ -67,13 +67,20 @@ class BusinessReviews(models.Model):
     user = models.ForeignKey('account_api.UserAccount',on_delete=models.CASCADE)
     business = models.ForeignKey(Business, on_delete=models.CASCADE)
     date_posted = models.DateTimeField(auto_now_add=True)
-    
+
+
+class BusinessComment(models.Model):
+    """Business comment replies are stored here"""
+    comment = models.CharField(max_length=5000,blank=False)
+    user = models.ForeignKey('account_api.UserAccount',on_delete=models.CASCADE)
+    business = models.ForeignKey(Business, on_delete=models.CASCADE)
+    date_posted = models.DateTimeField(auto_now_add=True)
 
 
 class BusinessCommentReply(models.Model):
     """Business comment replies are stored here"""
     comment = models.CharField(max_length=5000,blank=False)
-    business_comment = models.ForeignKey(BusinessReviews,on_delete= models.CASCADE)
+    business_comment = models.ForeignKey(BusinessComment,on_delete= models.CASCADE)
     user = models.ForeignKey('account_api.UserAccount',on_delete=models.CASCADE)
     business = models.ForeignKey(Business, on_delete=models.CASCADE, null=True, blank=True)
     date_posted = models.DateTimeField(auto_now_add=True)

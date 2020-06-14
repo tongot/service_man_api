@@ -16,7 +16,8 @@ router.register('product-images', views.ProductImagesViewSet, basename='product-
 router.register('products-own', views.OwnProductViewSet, basename='product-own')
 router.register('orders-own', views.OwnBusinessOrderView, basename='orders-own')
 router.register('rate-business', views.BusinessRatingView, basename='rate-business')
-router.register('replycomment-business', views.BusinessRatingReplyView, basename='replycomment-business')
+router.register('business-comment', views.BusinessCommentView, basename='business-comment')
+router.register('replycomment-business', views.BusinessCommentReplyView, basename='replycomment-business')
 
 
 
