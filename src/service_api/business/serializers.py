@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import BusinessCategory, ProductCategory, Location,Order, TypeOfGoodsSold,OtherProductProperty,Message, Business, Product, ProductImages
+from .models import BusinessReviews,BusinessCommentReply, BusinessCategory, ProductCategory, Location,Order, TypeOfGoodsSold,OtherProductProperty,Message, Business, Product, ProductImages
 
 
 class ProductCategorySerializer(serializers.ModelSerializer):
@@ -14,6 +14,7 @@ class BusinessCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = BusinessCategory
         fields = '__all__'
+
 
 class LocationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -123,6 +124,7 @@ class OwnProductSerializer(serializers.ModelSerializer):
         fields = '__all__'
         depth = 1
 
+
 class OrdersSerializer(serializers.ModelSerializer):
 
     product_detail = serializers.SerializerMethodField(read_only=True)
@@ -134,7 +136,36 @@ class OrdersSerializer(serializers.ModelSerializer):
         detail = order.product
         return {'name':detail.name,'id':detail.id}
 
+
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
         fields = '__all__'
+
+
+class BusinessReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BusinessReviews
+        fields = '__all__'
+
+
+class BusinessCommentReplySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BusinessCommentReply
+        fields = '__all__'
+
+    def create(self,validated_data):
+        print(validated_data['business_comment'].id)
+        bussiness_original_comment = BusinessReviews.objects.get(pk = validated_data['business_comment'].id)
+        business = Business.objects.get(pk = bussiness_original_comment.business.id)
+        print(business.owner)
+        if business.owner.id == validated_data['user'].id:
+            reply = BusinessCommentReply.objects.create(
+                comment=validated_data['comment'],
+                business_comment=validated_data['business_comment'],
+                user=validated_data['user'],
+                business=business
+            )
+            return reply
+        reply = BusinessCommentReply.objects.create(**validated_data)
+        return reply

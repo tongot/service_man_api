@@ -10,9 +10,9 @@ from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.filters import SearchFilter, OrderingFilter
 
-from .models import ProductCategory,BusinessCategory, Location, Business, Product,ProductImages,Order,Message
-from .serializers import BusinessCategorySerializer,ProductImageSerializer,OwnProductSerializer,OrdersSerializer,MessageSerializer, ProductCategorySerializer, LocationSerializer, ProductSerializer, BusinessSerializer
-from .permissions import IsTheirOrder
+from .models import BusinessReviews,BusinessCommentReply, ProductCategory,BusinessCategory, Location, Business, Product,ProductImages,Order,Message
+from .serializers import BusinessReviewSerializer,BusinessCommentReplySerializer,BusinessCategorySerializer,ProductImageSerializer,OwnProductSerializer,OrdersSerializer,MessageSerializer, ProductCategorySerializer, LocationSerializer, ProductSerializer, BusinessSerializer
+from .permissions import IsTheirOrder, IsOwnerOrReadOnly
 
 class OwnBusinessView(APIView):
     authentication_classes = [TokenAuthentication]
@@ -115,6 +115,7 @@ class BusinessView(viewsets.ModelViewSet):
                 return Business.objects.filter(category__in=category)
         return Business.objects.all()
 
+
 class ProductView(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     pagination_class = PageNumberPagination
@@ -174,7 +175,6 @@ class ProductView(viewsets.ModelViewSet):
         return self.filterPrice(Product.objects.all(),maxPrice,minPrice)
         
 
-
 class ProductCoverView(viewsets.ModelViewSet): 
     queryset= ProductImages.objects.all()
     serializer_class = ProductImageSerializer
@@ -191,6 +191,7 @@ class MessageView(viewsets.ModelViewSet):
    
 
 class OwnProductViewSet(viewsets.ViewSet):
+
     """get own business product"""
     def get(self,request,format=None):
         if 'businessId' in request.query_params:
@@ -204,3 +205,23 @@ class OwnProductViewSet(viewsets.ViewSet):
         
     def create(self,request):
         pass
+
+class BusinessRatingView(viewsets.ModelViewSet):
+    """Business comment and ratings """
+
+    queryset = BusinessReviews.objects.all()
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
+    serializer_class = BusinessReviewSerializer
+
+
+class BusinessRatingReplyView(viewsets.ModelViewSet):
+    """Business comment and ratings """
+
+    queryset = BusinessCommentReply.objects.all()
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
+    serializer_class = BusinessCommentReplySerializer
+
+
+

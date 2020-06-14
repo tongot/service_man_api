@@ -1,5 +1,6 @@
 import uuid
 from django.db import models
+from datetime import datetime
 
 def image_name_id(instance,filename):
         extension = filename.split(".")[-1]
@@ -53,16 +54,20 @@ class Business(models.Model):
 class BusinessReviews(models.Model):
     """stores the comment passed by an individual for a product"""
       
-    STARS=( ('GOOD', 1),
-        ('BETTER',2),
-        ('COOL' ,3),
-        ('BEST' , 4),
-        ('EXCELLENT' ,5),)
+    STARS=[ 
+        ( 0,'NONE'),
+        ( 1,'GOOD'),
+        (2,'BETTER'),
+        ( 3,'COOL'),
+        ( 4,'BEST'),
+        ( 5,'EXCELLENT')]
 
     comment = models.CharField(max_length=5000,blank=False)
-    stars = models.IntegerField(choices=STARS)
+    stars = models.IntegerField(choices=STARS,default=0,blank=True,null=True)
     user = models.ForeignKey('account_api.UserAccount',on_delete=models.CASCADE)
     business = models.ForeignKey(Business, on_delete=models.CASCADE)
+    date_posted = models.DateTimeField(auto_now_add=True)
+    
 
 
 class BusinessCommentReply(models.Model):
@@ -70,6 +75,8 @@ class BusinessCommentReply(models.Model):
     comment = models.CharField(max_length=5000,blank=False)
     business_comment = models.ForeignKey(BusinessReviews,on_delete= models.CASCADE)
     user = models.ForeignKey('account_api.UserAccount',on_delete=models.CASCADE)
+    business = models.ForeignKey(Business, on_delete=models.CASCADE, null=True, blank=True)
+    date_posted = models.DateTimeField(auto_now_add=True)
 
 
 class Product(models.Model):
@@ -103,13 +110,15 @@ class OtherProductProperty(models.Model):
 
 class ProductReviews(models.Model):
     """stores the comment passed by an individual for a product"""
-    STARS=( ('GOOD', 1),
-        ('BETTER',2),
-        ('COOL' ,3),
-        ('BEST' , 4),
-        ('EXCELLENT' ,5),)
+    STARS=[ 
+        ( 0,'NONE'),
+        ( 1,'GOOD'),
+        (2,'BETTER'),
+        ( 3,'COOL'),
+        ( 4,'BEST'),
+        ( 5,'EXCELLENT')]
     comment = models.CharField(max_length=5000,blank=False)
-    stars = models.IntegerField(choices=STARS)
+    stars = models.IntegerField(choices=STARS, default=0,blank=True,null=True)
     user = models.ForeignKey('account_api.UserAccount',on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
 

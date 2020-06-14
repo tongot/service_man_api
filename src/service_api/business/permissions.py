@@ -11,3 +11,13 @@ class IsTheirOrder(permissions.BasePermission):
                 return True
             return False
         return False
+
+
+class IsOwnerOrReadOnly(permissions.BasePermission):
+    """used to check if request from owner or from other surffer"""
+
+    def has_object_permission(self,request,view,obj):
+
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return obj.user == request.user

@@ -15,6 +15,10 @@ router.register('product_cover',views.ProductCoverView)
 router.register('product-images', views.ProductImagesViewSet, basename='product-images')
 router.register('products-own', views.OwnProductViewSet, basename='product-own')
 router.register('orders-own', views.OwnBusinessOrderView, basename='orders-own')
+router.register('rate-business', views.BusinessRatingView, basename='rate-business')
+router.register('replycomment-business', views.BusinessRatingReplyView, basename='replycomment-business')
+
+
 
 
 urlpatterns = [
