@@ -96,6 +96,7 @@ class Product(models.Model):
     product_new = models.BooleanField(default=1)
     product_available = models.BooleanField(default=0)
     price_neg =  models.BooleanField(default=0)
+    product_display_points = models.IntegerField(blank=True, null=True)
     business = models.ForeignKey(Business,on_delete= models.CASCADE)
     
     def __str__(self):

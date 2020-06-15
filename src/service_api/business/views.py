@@ -1,5 +1,8 @@
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
+from django.db.models import Max
+
+import random
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -173,7 +176,22 @@ class ProductView(viewsets.ModelViewSet):
             categoryResults = Product.objects.filter(product_category__in=categories)
             return  self.filterPrice(categoryResults,maxPrice,minPrice)
         return self.filterPrice(Product.objects.all(),maxPrice,minPrice)
-        
+
+    @action(detail=False, methods=['get'])
+    def getHomeProducts(self,request):
+        pagestring = request.query_params.get('page')
+        page_lengthstring = request.query_params.get('pageLength')
+        category = request.query_params.get('category')
+        if pagestring != None and page_lengthstring != None and category != None:
+            if pagestring.isdigit() and page_lengthstring.isdigit() and category.isdigit():
+                page = int(pagestring)-1
+                page_length = int(page_lengthstring)
+                products_count =  Product.objects.filter(product_category=category).count()
+                product= Product.objects.filter(product_category=category)[page*page_length:page*page_length+page_length]
+                serializer = ProductSerializer(product,many=True, context={'request':request})
+                return Response({'count':products_count,'items':serializer.data})
+            return Response({'message':'parameter shot'})
+        return Response({'message':'parameter shot'})
 
 class ProductCoverView(viewsets.ModelViewSet): 
     queryset= ProductImages.objects.all()
