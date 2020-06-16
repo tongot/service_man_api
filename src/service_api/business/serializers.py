@@ -1,6 +1,6 @@
 from datetime import datetime
 from rest_framework import serializers
-from .models import BusinessComment,BusinessReviews,BusinessCommentReply, BusinessCategory, ProductCategory, Location,Order, TypeOfGoodsSold,OtherProductProperty,Message, Business, Product, ProductImages
+from .models import BusinessComment,BusinessProfile,Country, BusinessDirectors, BusinessContactPerson,BusinessReviews,BusinessCommentReply, BusinessCategory, ProductCategory, Location,Order, TypeOfGoodsSold,OtherProductProperty,Message, Business, Product, ProductImages
 
 
 class ProductCategorySerializer(serializers.ModelSerializer):
@@ -20,22 +20,49 @@ class BusinessCategorySerializer(serializers.ModelSerializer):
 class LocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Location
-        fields = ['id','country', 'city',]
+        fields = '__all__'
        
+
+class CountrySerializer(serializers.ModelSerializer):
+    locations = LocationSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Country
+        fields = '__all__'
+
+
+class BusinessContactPersonSerializer(serializers.ModelSerializer):
+    id= serializers.IntegerField(required=False)
+    class Meta:
+        model = BusinessContactPerson
+        fields = ['id','first_name','last_name','phone']
+
+class BusinessDirectorsSerializer(serializers.ModelSerializer):
+    id= serializers.IntegerField(required=False)
+    class Meta:
+        model = BusinessDirectors
+        fields = ['id','first_name','last_name','about_director','social_links']
+
+class BusinessProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BusinessProfile
+        fields = '__all__'
 
 class BusinessSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     location_detail= serializers.SerializerMethodField(read_only=True)
     category_detail = serializers.SerializerMethodField(read_only=True)
+    contact_person = BusinessContactPersonSerializer(many=True)
+    directors = BusinessDirectorsSerializer(many=True)
 
     class Meta:
         model = Business
-        fields = ['id','business_logo','location_detail','owner','name','description','email','address','location','phone','location','contact_persona_name','contact_persona_phone','date_created','category','category_detail']
+        fields = ['id','articles_number','business_logo','owner','name','description','email','address','location','phone','location','date_created','category','category_detail','location_detail','contact_person','directors']
         extra_kwargs={'date_created':{'read_only':True}}
 
     def get_location_detail(self,business):
         detail = business.location
-        data = {'country':detail.country,'city':detail.city,'id':detail.id}
+        data = {'country':detail.country.name,'city':detail.city,'id':detail.id}
         return data
 
     def get_category_detail(self,business):
@@ -43,6 +70,69 @@ class BusinessSerializer(serializers.ModelSerializer):
         data = {'name':detail.name,'description':detail.description,'id':detail.id}
         return data
 
+    def create(self,validated_data):
+        contact_person = validated_data.pop('contact_person')
+        directors = validated_data.pop('directors')
+        business = Business.objects.create(**validated_data)
+        business.save()
+        for person in contact_person:
+            contact = BusinessContactPerson.objects.create(
+                first_name=person['first_name'],
+                last_name=person['last_name'],
+                phone=person['phone'],
+                business=business)
+            contact.save()
+        for director in directors:
+            direct = BusinessDirectors.objects.create(
+                first_name=director['first_name'],
+                last_name=director['last_name'],
+                about_director=director['about_director'],
+                social_links=director['social_links'],
+                business=business)
+            direct.save()
+        return business
+    
+    def update(self,instance,validated_data):
+        contact_person = validated_data.pop('contact_person')
+        directors = validated_data.pop('directors')
+        business = super().update(instance,validated_data)
+        for person in contact_person:
+            if person['id']==0:
+                new_contact = BusinessContactPerson.create(
+                    first_name=person['first_name'],
+                    last_name=person['last_name'],
+                    phone=person['phone'],
+                    business=business )
+                new_contact.save()
+
+            elif person['id']>0:
+                BusinessContactPerson.objects.filter(pk=person['id']).update(
+                    first_name=person['first_name'],
+                    last_name=person['last_name'],
+                    phone=person['phone'],)
+
+            else:
+                pass
+
+        for person in directors:
+            if person['id']==0:
+                new_director = BusinessDirectors.objects.create(
+                     first_name=person['first_name'],
+                    last_name=person['last_name'],
+                    about_director=person['about_director'],
+                    social_links=person['social_links'],
+                    business=business )
+            elif person['id']>0:
+                BusinessDirectors.objects.filter(pk=person['id']).update(
+                     first_name=person['first_name'],
+                    last_name=person['last_name'],
+                    about_director=person['about_director'],
+                    social_links=person['social_links'],
+                )
+            else:
+                pass
+
+        return business
 
 class ProductImageSerializer(serializers.ModelSerializer):
     product = serializers.IntegerField(source='product.id',required=False)

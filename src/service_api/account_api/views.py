@@ -17,8 +17,8 @@ from .permissions import IsOwnerOrReadOnly
 
 class UserAccountViewSet(viewsets.ViewSet):
     """this Handels all activities that are to do with the user registation"""
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
+    authentication_classes = []
+    permission_classes = [IsOwnerOrReadOnly]
 
     def list(self,request):
         users = UserDetail.objects.all()

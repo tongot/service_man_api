@@ -6,6 +6,7 @@ def image_name_id(instance,filename):
         extension = filename.split(".")[-1]
         return "{}.{}".format(uuid.uuid4(),extension)
 
+
 class BusinessCategory(models.Model):
 
     name = models.CharField(max_length=255, blank=False)
@@ -13,6 +14,7 @@ class BusinessCategory(models.Model):
     
     def __str__(self):
         return self.name
+
 
 class ProductCategory(models.Model):
 
@@ -23,10 +25,18 @@ class ProductCategory(models.Model):
         return self.name
 
 
+class Country(models.Model):
+    name = models.CharField(max_length= 255, blank= False)
+    country_code = models.CharField(max_length=20, blank= False)
+    phone_number_structure =models.CharField(max_length=20, null= True)
+
+    def __str__(self):
+        return self.name
+
 class Location(models.Model):
 
-    country = models.CharField(max_length=100, blank=False)
     city = models.CharField(max_length=100, blank=False)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE,null=True)
 
     def __str__(self):
         return "{} {}".format(self.country,self.city)
@@ -40,15 +50,38 @@ class Business(models.Model):
     address = models.CharField(max_length=255, blank=False)
     location = models.ForeignKey(Location,on_delete=models.CASCADE,null=True)
     phone = models.CharField(max_length=15, blank=False)
-    contact_persona_name = models.CharField(max_length=255, blank=False)
-    contact_persona_phone = models.CharField(max_length=15)
     business_logo = models.ImageField('business logo',blank=True,null=True, upload_to=image_name_id)
     date_created = models.DateTimeField(auto_now_add=True)
     email = models.EmailField(blank=True, null=True)
-    category = models.ForeignKey(BusinessCategory, on_delete=models.DO_NOTHING)
+    category = models.ForeignKey(BusinessCategory, on_delete=models.CASCADE)
+    articles_number = models.CharField(max_length=15, null=True)
 
     def __str__(self):
         return self.name
+
+
+class BusinessContactPerson(models.Model):
+    
+    first_name = models.CharField(max_length=255, blank=False)
+    last_name = models.CharField(max_length=255, blank=False) 
+    phone = models.CharField(max_length=15)
+    business = models.ForeignKey(Business,related_name='contact_person', on_delete=models.CASCADE)
+
+
+class BusinessDirectors(models.Model):
+
+    first_name = models.CharField(max_length=255, blank=False)
+    last_name = models.CharField(max_length=255, blank=False)
+    about_director = models.CharField(max_length= 1000)
+    social_links = models.CharField(max_length= 5000)
+    business = models.ForeignKey(Business,related_name='directors', on_delete=models.CASCADE)
+
+
+class BusinessProfile(models.Model):
+
+    business = models.ForeignKey(Business, on_delete=models.CASCADE)
+    about = models.CharField(max_length=5000, blank=False)
+    main_color = models.CharField(max_length=255)
 
 
 class BusinessReviews(models.Model):
@@ -147,6 +180,7 @@ class Service(models.Model):
     def __str__(self):
         return self.name
 
+
 class Order(models.Model):
     """change these defaults wen time to move database"""
 
@@ -166,11 +200,10 @@ class Order(models.Model):
     customer = models.IntegerField(blank=True,null=True)
     quantity = models.IntegerField(blank=False,default=1)
     date_of_order = models.DateTimeField(auto_now_add=True)
-    product = models.ForeignKey(Product, on_delete= models.DO_NOTHING)
-    business = models.ForeignKey(Business,blank=True,null=True,on_delete=models.DO_NOTHING)
+    product = models.ForeignKey(Product, on_delete= models.CASCADE)
+    business = models.ForeignKey(Business,blank=True,null=True,on_delete=models.CASCADE)
     approved = models.CharField(max_length=3, choices=APPROVAL_STATE,default=NO)
     viewed = models.BooleanField(default=False)
-
 
 
 class TypeOfGoodsSold(models.Model):
@@ -187,4 +220,4 @@ class Message(models.Model):
     customer = models.IntegerField(blank=True,null=True)
     business = models.ForeignKey(Business,on_delete=models.CASCADE)
     product = models.IntegerField(blank=True, null=True)
-    
+ 

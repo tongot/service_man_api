@@ -63,6 +63,7 @@ class UserDetail(models.Model):
     address2 = models.CharField(max_length=255,)
     registered_date = models.DateTimeField(auto_now_add=True)
     user = models.OneToOneField(UserAccount ,blank=True, on_delete=models.CASCADE,null=True)
+    country = models.ForeignKey('business.Country',on_delete=models.CASCADE,null=True)
 
     def __str__(self):
         return self.phone_number
