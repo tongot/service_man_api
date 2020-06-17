@@ -1,4 +1,6 @@
 from datetime import datetime
+import json
+
 from rest_framework import serializers
 from .models import BusinessComment,BusinessProfile,Country, BusinessDirectors, BusinessContactPerson,BusinessReviews,BusinessCommentReply, BusinessCategory, ProductCategory, Location,Order, TypeOfGoodsSold,OtherProductProperty,Message, Business, Product, ProductImages
 
@@ -52,12 +54,16 @@ class BusinessSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     location_detail= serializers.SerializerMethodField(read_only=True)
     category_detail = serializers.SerializerMethodField(read_only=True)
-    contact_person = BusinessContactPersonSerializer(many=True)
-    directors = BusinessDirectorsSerializer(many=True)
+    contact_person = BusinessContactPersonSerializer(many=True, required=False)
+    directors = BusinessDirectorsSerializer(many=True, required=False)
+
+    # dammies to represent json in text form from form data
+    directorJ= serializers.CharField(required=False)
+    contactJ = serializers.CharField(required=False)
 
     class Meta:
         model = Business
-        fields = ['id','articles_number','business_logo','owner','name','description','email','address','location','phone','location','date_created','category','category_detail','location_detail','contact_person','directors']
+        fields = ['directorJ','contactJ','id','articles_number','business_logo','owner','name','description','email','address','location','phone','location','date_created','category','category_detail','location_detail','contact_person','directors']
         extra_kwargs={'date_created':{'read_only':True}}
 
     def get_location_detail(self,business):
@@ -69,10 +75,28 @@ class BusinessSerializer(serializers.ModelSerializer):
         detail = business.category
         data = {'name':detail.name,'description':detail.description,'id':detail.id}
         return data
-
+    
     def create(self,validated_data):
-        contact_person = validated_data.pop('contact_person')
-        directors = validated_data.pop('directors')
+        print(validated_data)
+        contact_person = None
+        directors = None
+
+        hasDammyContact = validated_data.get('contactJ')
+        hasDammyDirector = validated_data.get('directorJ')
+        if hasDammyContact!=None:
+            validated_data.pop('contactJ')
+            contact_person = json.loads(hasDammyContact)
+        if hasDammyDirector!= None:
+            validated_data.pop('directorJ')
+            directors = json.loads(hasDammyDirector)
+        if validated_data.get('contact_person')!=None:
+            contact_person = validated_data.pop('contact_person')
+        if validated_data.get('directors')!=None:
+            directors = validated_data.pop('directors')
+
+        if contact_person==None or directors == None:
+             raise serializers.ValidationError("Needs at least 1 director and 1 contact person")
+
         business = Business.objects.create(**validated_data)
         business.save()
         for person in contact_person:
@@ -87,24 +111,44 @@ class BusinessSerializer(serializers.ModelSerializer):
                 first_name=director['first_name'],
                 last_name=director['last_name'],
                 about_director=director['about_director'],
-                social_links=director['social_links'],
+                social_links=director.get('social_links'),
                 business=business)
             direct.save()
         return business
     
     def update(self,instance,validated_data):
-        contact_person = validated_data.pop('contact_person')
-        directors = validated_data.pop('directors')
-        
+        contact_person = None
+        directors = None
+
+        hasDammyContact = validated_data.get('contactJ')
+        hasDammyDirector = validated_data.get('directorJ')
+        if hasDammyContact!=None:
+            validated_data.pop('contactJ')
+            contact_person = json.loads(hasDammyContact)
+        if hasDammyDirector!= None:
+            validated_data.pop('directorJ')
+            directors = json.loads(hasDammyDirector)
+        if validated_data.get('contact_person')!=None:
+            contact_person = validated_data.pop('contact_person')
+        if validated_data.get('directors')!=None:
+            directors = validated_data.pop('directors')
+
+        if contact_person==None or directors == None:
+             raise serializers.ValidationError("Needs at least 1 director and 1 contact person")
+
+        business = super().update(instance,validated_data)
+
         for person in contact_person:
             if person['id']==0:
-                new_contact = BusinessContactPerson.create(
+                new_contact = BusinessContactPerson.objects.create(
                     first_name=person['first_name'],
                     last_name=person['last_name'],
                     phone=person['phone'],
                     business=business )
                 new_contact.save()
-
+            elif person['id']<0:
+                p =BusinessContactPerson.objects.get(pk=(person['id']*-1))
+                p.delete()
             elif person['id']>0:
                 BusinessContactPerson.objects.filter(pk=person['id']).update(
                     first_name=person['first_name'],
@@ -120,19 +164,22 @@ class BusinessSerializer(serializers.ModelSerializer):
                      first_name=person['first_name'],
                     last_name=person['last_name'],
                     about_director=person['about_director'],
-                    social_links=person['social_links'],
+                    social_links=person.get('social_links'),
                     business=business )
                 new_director.save()
+            elif person['id']<0:
+                p= BusinessDirectors.objects.get(pk=person['id']*-1)
+                p.delete()
             elif person['id']>0:
                 BusinessDirectors.objects.filter(pk=person['id']).update(
                      first_name=person['first_name'],
                     last_name=person['last_name'],
                     about_director=person['about_director'],
-                    social_links=person['social_links'],
+                    social_links=person.get('social_links'),
                 )
             else:
                 pass
-        business = super().update(instance,validated_data)
+        
         return business
 
 class ProductImageSerializer(serializers.ModelSerializer):

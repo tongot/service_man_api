@@ -73,7 +73,7 @@ class BusinessDirectors(models.Model):
     first_name = models.CharField(max_length=255, blank=False)
     last_name = models.CharField(max_length=255, blank=False)
     about_director = models.CharField(max_length= 1000)
-    social_links = models.CharField(max_length= 5000)
+    social_links = models.CharField(max_length= 5000,null=True,blank=True)
     business = models.ForeignKey(Business,related_name='directors', on_delete=models.CASCADE)
 
 
