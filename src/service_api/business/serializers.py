@@ -95,7 +95,7 @@ class BusinessSerializer(serializers.ModelSerializer):
     def update(self,instance,validated_data):
         contact_person = validated_data.pop('contact_person')
         directors = validated_data.pop('directors')
-        business = super().update(instance,validated_data)
+        
         for person in contact_person:
             if person['id']==0:
                 new_contact = BusinessContactPerson.create(
@@ -122,6 +122,7 @@ class BusinessSerializer(serializers.ModelSerializer):
                     about_director=person['about_director'],
                     social_links=person['social_links'],
                     business=business )
+                new_director.save()
             elif person['id']>0:
                 BusinessDirectors.objects.filter(pk=person['id']).update(
                      first_name=person['first_name'],
@@ -131,7 +132,7 @@ class BusinessSerializer(serializers.ModelSerializer):
                 )
             else:
                 pass
-
+        business = super().update(instance,validated_data)
         return business
 
 class ProductImageSerializer(serializers.ModelSerializer):

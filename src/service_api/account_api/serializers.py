@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import UserAccount, UserDetail
-
+from django.apps import apps
+Country = apps.get_model('business','Country')
 
 class UserAccountSerializer(serializers.ModelSerializer):
     password_confirm = serializers.CharField(max_length=255,required=False,allow_blank=True)
@@ -15,7 +16,7 @@ class UserAccountSerializer(serializers.ModelSerializer):
 
     def validate(self,validate_data):
         user_id = validate_data['id'] if 'id' in validate_data  else 0
-        user_email = validate_data['email']
+        user_email = validate_data.get('email')
         if user_email==None:
             raise serializers.ValidationError("Email is required")
 
@@ -29,18 +30,27 @@ class UserAccountSerializer(serializers.ModelSerializer):
 
         return validate_data
 
+
 class UserDetailSerializer(serializers.ModelSerializer):
+    country_detail =  serializers.SerializerMethodField(read_only=True)
     user = UserAccountSerializer()
     class Meta:
         model=UserDetail
-        fields = ['id','user','phone_number', 'phone_number2','address','address2']
+        fields = ['id','user','phone_number', 'phone_number2','address','address2','country','country_detail']
+
+    def get_country_detail(self,user):
+      
+        detail = user.country
+        data = {'id':detail.id,'name':detail.name,'code':detail.country_code}
+        return data
 
     def create(self, validated_data):
+        print(validated_data)
         user1 = validated_data.pop('user')
         user = UserAccount(
         email=user1['email'],
         name=user1['name'],
-        surname= user1['surname']
+        surname= user1['surname'],
         )
         user.set_password(user1['password'])
         user.save()
@@ -53,12 +63,14 @@ class UserDetailSerializer(serializers.ModelSerializer):
         instance.user.name=user['name']
         instance.user.surname=user['surname']
         instance.user.email=user['email']
+        
         user_update=instance.user
 
         instance.phone_number= validate_data['phone_number']
         instance.phon_number2 = validate_data['phone_number2']
         instance.address = validate_data['address']
         instance.address2 = validate_data['address2']
+        instance.country=user['country']
 
         user_update.save()
         instance.save()

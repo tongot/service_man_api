@@ -31,6 +31,7 @@ class UserAccountViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def create(self,request):
+        print(request.data)
         serializer_class = UserDetailSerializer(data=request.data)
 
         if (request.data['user']['password'] != request.data['user']['password_confirm']):
@@ -89,7 +90,8 @@ class GetUser(APIView):
                     'id':request.user.id,
                     'address':user_details.address,
                     'address2':user_details.address,
-                    'phone_number':user_details.phone_number
+                    'phone_number':user_details.phone_number,
+                    'country':user_details.country.name
             })
         return Response(user)
 

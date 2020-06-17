@@ -58,12 +58,12 @@ class UserAccount(AbstractBaseUser,PermissionsMixin):
 class UserDetail(models.Model):
 
     phone_number = models.CharField(max_length=255, blank=False)
-    phone_number2 = models.CharField(max_length=255)
+    phone_number2 = models.CharField(max_length=255,blank=True,null=True)
     address = models.CharField(max_length=255, blank=False)
-    address2 = models.CharField(max_length=255,)
+    address2 = models.CharField(max_length=255)
     registered_date = models.DateTimeField(auto_now_add=True)
     user = models.OneToOneField(UserAccount ,blank=True, on_delete=models.CASCADE,null=True)
-    country = models.ForeignKey('business.Country',on_delete=models.CASCADE,null=True)
+    country = models.ForeignKey('business.Country',on_delete=models.CASCADE)
 
     def __str__(self):
         return self.phone_number
