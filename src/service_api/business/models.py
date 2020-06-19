@@ -79,8 +79,8 @@ class BusinessDirectors(models.Model):
 
 class BusinessProfile(models.Model):
 
-    business = models.ForeignKey(Business, on_delete=models.CASCADE)
-    about = models.CharField(max_length=5000, blank=False)
+    business = models.OneToOneField(Business, on_delete=models.CASCADE)
+    about = models.CharField(max_length=10000, blank=False)
     main_color = models.CharField(max_length=255)
 
 

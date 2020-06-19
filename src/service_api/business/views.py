@@ -13,8 +13,8 @@ from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.filters import SearchFilter, OrderingFilter
 
-from .models import Country, BusinessReviews, BusinessComment, BusinessCommentReply, ProductCategory,BusinessCategory, Location, Business, Product,ProductImages,Order,Message
-from .serializers import CountrySerializer, BusinessCommentSerializer, BusinessReviewSerializer,BusinessCommentReplySerializer,BusinessCategorySerializer,ProductImageSerializer,OwnProductSerializer,OrdersSerializer,MessageSerializer, ProductCategorySerializer, LocationSerializer, ProductSerializer, BusinessSerializer
+from .models import Country,BusinessProfile, BusinessReviews, BusinessComment, BusinessCommentReply, ProductCategory,BusinessCategory, Location, Business, Product,ProductImages,Order,Message
+from .serializers import CountrySerializer,BusinessProfileSerializer, BusinessCommentSerializer, BusinessReviewSerializer,BusinessCommentReplySerializer,BusinessCategorySerializer,ProductImageSerializer,OwnProductSerializer,OrdersSerializer,MessageSerializer, ProductCategorySerializer, LocationSerializer, ProductSerializer, BusinessSerializer
 from .permissions import IsTheirOrder, IsOwnerOrReadOnly
 
 class OwnBusinessView(APIView):
@@ -26,6 +26,9 @@ class OwnBusinessView(APIView):
         serializer = BusinessSerializer(queryset,many=True, context={'request':request})
         return Response(serializer.data)
 
+class BusinessProfileView(viewsets.ModelViewSet):
+    queryset = BusinessProfile.objects.all()
+    serializer_class = BusinessProfileSerializer
 
 class CountryView(viewsets.ModelViewSet):
     queryset = Country.objects.all()

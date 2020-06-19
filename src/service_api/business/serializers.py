@@ -2,7 +2,7 @@ from datetime import datetime
 import json
 
 from rest_framework import serializers
-from .models import BusinessComment,BusinessProfile,Country, BusinessDirectors, BusinessContactPerson,BusinessReviews,BusinessCommentReply, BusinessCategory, ProductCategory, Location,Order, TypeOfGoodsSold,OtherProductProperty,Message, Business, Product, ProductImages
+from .models import BusinessProfile, BusinessComment,BusinessProfile,Country, BusinessDirectors, BusinessContactPerson,BusinessReviews,BusinessCommentReply, BusinessCategory, ProductCategory, Location,Order, TypeOfGoodsSold,OtherProductProperty,Message, Business, Product, ProductImages
 
 
 class ProductCategorySerializer(serializers.ModelSerializer):
@@ -11,6 +11,10 @@ class ProductCategorySerializer(serializers.ModelSerializer):
         model = ProductCategory
         fields = '__all__'
 
+class BusinessProfilSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BusinessProfile
+        fields = '__all__'
 
 class BusinessCategorySerializer(serializers.ModelSerializer):
     selected = serializers.BooleanField(required=False,default=True,read_only=True)
@@ -56,6 +60,7 @@ class BusinessSerializer(serializers.ModelSerializer):
     category_detail = serializers.SerializerMethodField(read_only=True)
     contact_person = BusinessContactPersonSerializer(many=True, required=False)
     directors = BusinessDirectorsSerializer(many=True, required=False)
+    profile = serializers.SerializerMethodField(read_only=True)
 
     # dammies to represent json in text form from form data
     directorJ= serializers.CharField(required=False)
@@ -63,8 +68,15 @@ class BusinessSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Business
-        fields = ['directorJ','contactJ','id','articles_number','business_logo','owner','name','description','email','address','location','phone','location','date_created','category','category_detail','location_detail','contact_person','directors']
+        fields = ['directorJ','contactJ','id','articles_number','business_logo','owner','name','description','email','address','location','phone','location','date_created','category','category_detail','location_detail','contact_person','directors','profile']
         extra_kwargs={'date_created':{'read_only':True}}
+
+    def get_profile(self,business):
+        detail = BusinessProfile.objects.filter(business=business).first()
+        data = {}
+        if detail!=None:
+            data = {'id':detail.id,'about':detail.about,'main_color':detail.main_color}
+        return data
 
     def get_location_detail(self,business):
         detail = business.location
