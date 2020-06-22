@@ -241,11 +241,23 @@ class BusinessRatingView(viewsets.ModelViewSet):
 
 class BusinessCommentView(viewsets.ModelViewSet):
     """Business comment """
-
+    
     queryset = BusinessComment.objects.all()
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
     serializer_class = BusinessCommentSerializer
+
+    @action(detail=False, methods=['get'])
+    def getBusinessComment(self,request,format=None):
+        business = request.query_params.get('businessId')
+        if business != None:
+            try:
+                comments = BusinessComment.objects.filter(business=business)
+                serielizer = BusinessCommentSerializer(comments,many=True)
+                return Response(serielizer.data)
+            except:
+                return Response(request.data,status.HTTP_404_BAD_REQUEST)
+        return Response(request.data,status.HTTP_404_BAD_REQUEST)
 
 
 class BusinessCommentReplyView(viewsets.ModelViewSet):

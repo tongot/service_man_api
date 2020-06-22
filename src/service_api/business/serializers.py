@@ -43,16 +43,19 @@ class BusinessContactPersonSerializer(serializers.ModelSerializer):
         model = BusinessContactPerson
         fields = ['id','first_name','last_name','phone']
 
+
 class BusinessDirectorsSerializer(serializers.ModelSerializer):
     id= serializers.IntegerField(required=False)
     class Meta:
         model = BusinessDirectors
         fields = ['id','first_name','last_name','about_director','social_links']
 
+
 class BusinessProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = BusinessProfile
         fields = '__all__'
+
 
 class BusinessSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
@@ -194,6 +197,7 @@ class BusinessSerializer(serializers.ModelSerializer):
         
         return business
 
+
 class ProductImageSerializer(serializers.ModelSerializer):
     product = serializers.IntegerField(source='product.id',required=False)
 
@@ -312,11 +316,6 @@ class BusinessReviewSerializer(serializers.ModelSerializer):
         rating = BusinessReviews.objects.create(**validated_data)
         return rating
 
-class BusinessCommentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BusinessComment
-        fields = '__all__'
-
 
 class BusinessCommentReplySerializer(serializers.ModelSerializer):
     class Meta:
@@ -324,20 +323,37 @@ class BusinessCommentReplySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def create(self,validated_data):
-        print(validated_data['business_comment'].id)
         bussiness_original_comment = BusinessComment.objects.get(pk = validated_data['business_comment'].id)
-        business = Business.objects.get(pk = bussiness_original_comment.business.id)
-        print(business.owner)
-        if business.owner.id == validated_data['user'].id:
+        if bussiness_original_comment.business.owner.id == validated_data['user'].id:
             reply = BusinessCommentReply.objects.create(
-                comment=validated_data['comment'],
+                comment=validated_data['comment'], 
                 business_comment=validated_data['business_comment'],
                 user=validated_data['user'],
-                business=business
+                business=bussiness_original_comment.business
             )
             return reply
         reply = BusinessCommentReply.objects.create(**validated_data)
         return reply
-        
+
+
+class BusinessCommentSerializer(serializers.ModelSerializer):
+    replies = serializers.SerializerMethodField(read_only = True)
+
+    class Meta:
+        model = BusinessComment
+        fields = ['comment','date_posted','user','business','replies']
+
+    def get_replies(self,comment):
+        result=[]
+        replies = BusinessCommentReply.objects.filter(business_comment=comment.id)
+        if replies!= None:
+            for reply in replies:
+                result.append({'reply':reply.comment,'user_id':reply.user.id,
+                'user_email':reply.user.email, 'username':reply.user.name,
+                'date_posted':reply.date_posted
+                })
+            return result
+        return result
+
 
 
