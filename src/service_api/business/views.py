@@ -225,7 +225,7 @@ class OwnProductViewSet(viewsets.ViewSet):
                 queryset = Product.objects.filter(business_id= businessId)
                 serializer = ProductSerializer(queryset,many=True, context={'request':request})
                 return Response(serializer.data)
-            return Response({'error':'product not found'},status.HTTP_404_BAD_REQUEST)
+            return Response({'error':'product not found'},status.HTTP_400_BAD_REQUEST)
         return Response({'error':'product not found'},status.HTTP_400_BAD_REQUEST)  
         
     def create(self,request):
@@ -239,10 +239,35 @@ class BusinessRatingView(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
     serializer_class = BusinessReviewSerializer
 
+    @action(detail=False, methods=['get'])
+    def getBusinessRating(self,request,format=None):
+        business = request.query_params.get('businessId')
+        if business != None:
+            try:
+                rating = BusinessReviews.objects.filter(business=business)
+                total_stars= sum([rate.stars for rate in rating])
+                number_of_ratings = rating.count()
+                #create comment object list for the business
+                ratings=[{'id':rate.id,
+                'stars':rate.stars,
+                'date':rate.date_posted,
+                'user':rate.user.name,
+                'comment':rate.comment,
+                'business':rate.business.id}
+                for rate in rating]
+
+                business_rating = {'total_stars':total_stars,
+                'number_of_ratings':number_of_ratings,
+                'ratings':ratings}
+                return Response(business_rating)
+            except:
+                return Response(request.data,status.HTTP_400_BAD_REQUEST)
+        return Response(request.data,status.HTTP_400_BAD_REQUEST)
+
 class BusinessCommentView(viewsets.ModelViewSet):
     """Business comment """
     
-    queryset = BusinessComment.objects.all()
+    queryset = BusinessComment.objects.all().order_by('-date_posted')
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
     serializer_class = BusinessCommentSerializer
@@ -252,7 +277,7 @@ class BusinessCommentView(viewsets.ModelViewSet):
         business = request.query_params.get('businessId')
         if business != None:
             try:
-                comments = BusinessComment.objects.filter(business=business)
+                comments = BusinessComment.objects.filter(business=business).order_by('-date_posted')
                 serielizer = BusinessCommentSerializer(comments,many=True)
                 return Response(serielizer.data)
             except:

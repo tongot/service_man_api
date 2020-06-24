@@ -95,7 +95,7 @@ class BusinessReviews(models.Model):
         ( 4,'BEST'),
         ( 5,'EXCELLENT')]
 
-    comment = models.CharField(max_length=5000,blank=False)
+    comment = models.CharField(max_length=5000,blank=True,null=True)
     stars = models.IntegerField(choices=STARS,default=0,blank=True,null=True)
     user = models.ForeignKey('account_api.UserAccount',on_delete=models.CASCADE)
     business = models.ForeignKey(Business, on_delete=models.CASCADE)

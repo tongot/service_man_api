@@ -338,18 +338,22 @@ class BusinessCommentReplySerializer(serializers.ModelSerializer):
 
 class BusinessCommentSerializer(serializers.ModelSerializer):
     replies = serializers.SerializerMethodField(read_only = True)
-
+    id= serializers.IntegerField(required=False)
+    username = serializers.SerializerMethodField(read_only = True)
     class Meta:
         model = BusinessComment
-        fields = ['comment','date_posted','user','business','replies']
+        fields = ['id','comment','date_posted','username','user','business','replies']
+
+    def get_username(self,comment):
+        return comment.user.name+" "+comment.user.surname
 
     def get_replies(self,comment):
         result=[]
         replies = BusinessCommentReply.objects.filter(business_comment=comment.id)
         if replies!= None:
             for reply in replies:
-                result.append({'reply':reply.comment,'user_id':reply.user.id,
-                'user_email':reply.user.email, 'username':reply.user.name,
+                result.append({'id':reply.id,'reply':reply.comment,'user_id':reply.user.id,
+                'user_email':reply.user.email, 'username':reply.user.name+" "+reply.user.surname,
                 'date_posted':reply.date_posted
                 })
             return result
