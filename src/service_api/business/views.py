@@ -26,13 +26,16 @@ class OwnBusinessView(APIView):
         serializer = BusinessSerializer(queryset,many=True, context={'request':request})
         return Response(serializer.data)
 
+
 class BusinessProfileView(viewsets.ModelViewSet):
     queryset = BusinessProfile.objects.all()
     serializer_class = BusinessProfileSerializer
 
+
 class CountryView(viewsets.ModelViewSet):
     queryset = Country.objects.all()
     serializer_class = CountrySerializer
+
 
 class OwnBusinessOrderView(viewsets.ViewSet):
     """Order processing for business owners"""
@@ -76,6 +79,7 @@ class OwnBusinessOrderView(viewsets.ViewSet):
     def create(self,request):
         pass
 
+
 class ProductImagesViewSet(viewsets.ViewSet):
     """upload multiple images"""
     def create(self,request):
@@ -112,7 +116,8 @@ class BusinessView(viewsets.ModelViewSet):
     serializer_class = BusinessSerializer
     filter_backends = (SearchFilter, OrderingFilter)
     search_fields = ['location__city','name']
-
+    pagination_class = PageNumberPagination
+    
     def get_queryset(self):
         categoryParams = self.request.query_params.get('businessCategory')
         category=[]
