@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'account_api',
     'business',
+    'storages'
 ]
 AUTH_USER_MODEL = 'account_api.UserAccount'
 MIDDLEWARE = [
@@ -57,9 +58,9 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'service_api.urls'
 
-REST_FRAMEWORK ={
-    'DEFAULT_PAGINATION_CLASSES':'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE':10,
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASSES': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
 }
 
 TEMPLATES = [
@@ -84,19 +85,19 @@ WSGI_APPLICATION = 'service_api.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
-#DATABASES = {
- #   'default': {
-  #      'ENGINE': 'django.db.backends.mysql',
-  #      'NAME': 'service_man',
-  #      'HOST': 'localhost',
-  #      'PORT': '3306',
- #       'USER': 'root',
-  #      'PASSWORD': 'root',
-  #  }
+# DATABASES = {
+#   'default': {
+#      'ENGINE': 'django.db.backends.mysql',
+#      'NAME': 'service_man',
+#      'HOST': 'localhost',
+#      'PORT': '3306',
+#       'USER': 'root',
+#      'PASSWORD': 'root',
+#  }
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR,'db.sqlite3'),
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 
@@ -136,10 +137,17 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
+DEFAULT_FILE_STORAGE = 'backend.custom_azure.AzureMediaStorage'
+
+MEDIA_LOCATION = "media"
+
 STATIC_URL = '/static/'
-MEDIA_ROOT = os.path.join(BASE_DIR,'..','upload_media')
-MEDIA_URL = '/media/'
+#MEDIA_ROOT = os.path.join(BASE_DIR, '..', 'upload_media')
+
+AZURE_ACCOUNT_NAME = ""
+AZURE_CUSTOM_DOMAIN = '{}.blob.core.windows.net'.format(AZURE_ACCOUNT_NAME)
+
+MEDIA_URL = 'https://{}/{}/'.format(AZURE_CUSTOM_DOMAIN, MEDIA_LOCATION)
+#MEDIA_URL = '/media/'
 
 CORS_ORIGIN_WHITELIST = 'http://localhost:8080',
-
-
