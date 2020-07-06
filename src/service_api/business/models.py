@@ -208,9 +208,11 @@ class Order(models.Model):
 
     YES = 'YES'
     NO = 'NO'
+    NEW = 'NEW'
     APPROVAL_STATE = [
         (YES, 'YES'),
         (NO, 'NO'),
+        (NEW, 'NEW'),
     ]
     country = models.CharField(max_length=255, blank=False)
     first_name = models.CharField(max_length=255, blank=False)
@@ -226,7 +228,7 @@ class Order(models.Model):
     business = models.ForeignKey(
         Business, blank=True, null=True, on_delete=models.CASCADE)
     approved = models.CharField(
-        max_length=3, choices=APPROVAL_STATE, default=NO)
+        max_length=3, choices=APPROVAL_STATE, default=NEW)
     viewed = models.BooleanField(default=False)
 
 

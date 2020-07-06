@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'rest_framework.authtoken',
+    'knox',
     'corsheaders',
     'account_api',
     'business',
@@ -59,8 +59,13 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'service_api.urls'
 
 REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': ('knox.auth.TokenAuthentication',),
     'DEFAULT_PAGINATION_CLASSES': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
+}
+
+REST_KNOX = {
+    'USER_SERIALIZER': 'account_api.serializers.UserSerializer'
 }
 
 TEMPLATES = [
@@ -133,6 +138,14 @@ USE_L10N = True
 
 USE_TZ = True
 
+# email server
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'groovetekbots@gmail.com'
+EMAIL_HOST_PASSWORD = 'fgyiqomtrjvkmfac'
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
@@ -144,7 +157,7 @@ MEDIA_LOCATION = "media"
 STATIC_URL = '/static/'
 #MEDIA_ROOT = os.path.join(BASE_DIR, '..', 'upload_media')
 
-AZURE_ACCOUNT_NAME = ""
+AZURE_ACCOUNT_NAME = "tshwaraganopicstorage"
 AZURE_CUSTOM_DOMAIN = '{}.blob.core.windows.net'.format(AZURE_ACCOUNT_NAME)
 
 MEDIA_URL = 'https://{}/{}/'.format(AZURE_CUSTOM_DOMAIN, MEDIA_LOCATION)
