@@ -143,8 +143,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'groovetekbots@gmail.com'
-EMAIL_HOST_PASSWORD = 'fgyiqomtrjvkmfac'
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
 
 
 # Static files (CSS, JavaScript, Images)
@@ -157,7 +157,7 @@ MEDIA_LOCATION = "media"
 STATIC_URL = '/static/'
 #MEDIA_ROOT = os.path.join(BASE_DIR, '..', 'upload_media')
 
-AZURE_ACCOUNT_NAME = "tshwaraganopicstorage"
+AZURE_ACCOUNT_NAME = ""
 AZURE_CUSTOM_DOMAIN = '{}.blob.core.windows.net'.format(AZURE_ACCOUNT_NAME)
 
 MEDIA_URL = 'https://{}/{}/'.format(AZURE_CUSTOM_DOMAIN, MEDIA_LOCATION)
