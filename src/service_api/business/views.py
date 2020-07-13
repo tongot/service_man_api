@@ -15,7 +15,7 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 
 from .models import Country, BusinessProfile, BusinessReviews, BusinessComment, BusinessCommentReply, ProductCategory, BusinessCategory, Location, Business, Product, ProductImages, Order, Message
 from .serializers import CountrySerializer, BusinessProfileSerializer, BusinessCommentSerializer, BusinessReviewSerializer, BusinessCommentReplySerializer, BusinessCategorySerializer, ProductImageSerializer, OwnProductSerializer, OrdersSerializer, MessageSerializer, ProductCategorySerializer, LocationSerializer, ProductSerializer, BusinessSerializer
-from .permissions import IsTheirOrder, IsOwnerOrReadOnly
+from .permissions import IsTheirOrder, IsOwnerOrReadOnly, IsSuperUser
 
 
 class OwnBusinessView(APIView):
@@ -31,11 +31,13 @@ class OwnBusinessView(APIView):
 class BusinessProfileView(viewsets.ModelViewSet):
     queryset = BusinessProfile.objects.all()
     serializer_class = BusinessProfileSerializer
+    permission_classes = [IsOwnerOrReadOnly]
 
 
 class CountryView(viewsets.ModelViewSet):
     queryset = Country.objects.all()
     serializer_class = CountrySerializer
+    permission_classes = [IsSuperUser]
 
 
 class OwnBusinessOrderView(viewsets.ViewSet):
@@ -165,16 +167,19 @@ class ProductImagesViewSet(viewsets.ViewSet):
 class LocationView(viewsets.ModelViewSet):
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
+    permission_classes = [IsSuperUser]
 
 
 class ProductCategoryView(viewsets.ModelViewSet):
     queryset = ProductCategory.objects.all()
     serializer_class = ProductCategorySerializer
+    permission_classes = [IsSuperUser]
 
 
 class BusinessCategoryView(viewsets.ModelViewSet):
     queryset = BusinessCategory.objects.all()
     serializer_class = BusinessCategorySerializer
+    permission_classes = [IsSuperUser]
 
 
 class BusinessView(viewsets.ModelViewSet):
